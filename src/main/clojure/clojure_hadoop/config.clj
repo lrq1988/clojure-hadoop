@@ -1,8 +1,9 @@
 (ns clojure-hadoop.config
   (:require [clojure-hadoop.imports :as imp]
             [clojure-hadoop.load :as load])
-  (:import (org.apache.hadoop.io.compress
-            DefaultCodec GzipCodec LzoCodec)))
+  (:use [clojure.contrib.str-utils :only (re-split)])
+  (:import [org.apache.hadoop.io.compress DefaultCodec GzipCodec LzoCodec]
+    [java.util.regex Pattern]))
 
 ;; This file defines configuration options for clojure-hadoop.  
 ;;
@@ -36,6 +37,11 @@
   (let [f (load/load-name value)]
     (doseq [[k v] (f)]
       (conf jobconf k v))))
+
+;; Job properties, string key-value pairs
+(defmethod conf :set [#^JobConf jobconf key value]
+  (let [kv (re-split #"\=" (as-str value))]
+    (.set jobconf (first kv) (last kv))))
 
 ;; Job input paths, separated by commas, as a String.
 (defmethod conf :input [#^JobConf jobconf key value]
@@ -235,5 +241,6 @@ Other available options are:
  -compress-output   If \"true\", compress job output files
  -output-compressor Compression class or \"gzip\",\"lzo\",\"default\"
  -compression-type  For seqfiles, compress \"block\",\"record\",\"none\"
+ -set               Custom properties for JobConf. Example: key=value
 "))
 
