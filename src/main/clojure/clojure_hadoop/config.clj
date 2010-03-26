@@ -43,6 +43,10 @@
   (let [kv (re-split #"\=" (as-str value))]
     (.set jobconf (first kv) (last kv))))
 
+;; Job name
+(defmethod conf :name [#^JobConf jobconf key value]
+  (.setJobName jobconf value))
+
 ;; Job input paths, separated by commas, as a String.
 (defmethod conf :input [#^JobConf jobconf key value]
   (FileInputFormat/setInputPaths jobconf (as-str value)))
